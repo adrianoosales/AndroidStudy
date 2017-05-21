@@ -1,7 +1,12 @@
 package com.adrianoosales.sunshine.sunshine;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -29,9 +34,35 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.action_settings)
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+
+            case R.id.action_map:
+                openPreferredLocationInMap();
+                return true;
+        }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openPreferredLocationInMap() {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String location = sharedPref.getString(getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
+
+        Uri geoLocation = Uri.parse("geo:0.0?")
+                .buildUpon()
+                .appendQueryParameter("q", location)
+                .build();
+        Intent mapViewIntent = new Intent(Intent.ACTION_VIEW);
+        mapViewIntent.setData(geoLocation);
+
+        if(mapViewIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(mapViewIntent);
+        }else {
+            Log.d("MainActivity", "Couldn't call an application to resolve location " + location);
+        }
     }
 }
